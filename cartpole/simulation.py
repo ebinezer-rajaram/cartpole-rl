@@ -31,3 +31,30 @@ def rollout(init_state, T=200, action_fn=None, remap=True, visual=False):
         traj.append(next_state.copy())
 
     return np.array(traj)
+
+def model_rollout(X0, C, T, remap_theta=True):
+    """
+    Roll out the learned linear model starting from X0.
+
+    Args:
+        X0 (ndarray): shape (4,), initial state
+        C (ndarray): shape (4, d), learned model matrix (Δ = C X)
+        T (int): number of time steps
+        remap_theta (bool): whether to remap angle after each step
+
+    Returns:
+        ndarray: trajectory of shape (T, 4)
+    """
+    d = C.shape[1]
+    X = np.zeros((T, 4))
+    x = X0.copy()
+
+    for t in range(T):
+        X[t] = x.copy()
+        dx = C @ x[:d]
+        x = x + dx
+        if remap_theta:
+            x[2] = remap_angle(x[2])
+
+    return X
+
