@@ -1,33 +1,16 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import os
-from cartpole.CartPole import CartPole
+from itertools import combinations
+from matplotlib.tri import Triangulation
 
-def perform_single_step(state, return_delta=False):
-    env = CartPole()
-    env.setState(state)
-    env.performAction(0.0)
-    new_state = env.getState()
-    return new_state - state if return_delta else new_state
-
-def scan_single_variable(var_index, scan_vals, base_state, return_delta=False):
-    X_vals = []
-    Y_outputs = []
-
-    for val in scan_vals:
-        test_state = base_state.copy()
-        test_state[var_index] = val
-        result = perform_single_step(test_state, return_delta)
-        X_vals.append(val)
-        Y_outputs.append(result)
-
-    return np.array(X_vals), np.array(Y_outputs)
+from cartpole.scanning import scan_1d, scan_2d
 
 def main():
     labels = ["x", "x_dot", "theta", "theta_dot"]
 
-    # TOGGLE HERE
-    return_delta = True  # False → Y = X(T), True → Y = X(T) - X(0)
+    # TOGGLE: True for Y = X' - X; False for Y = X'
+    return_delta = True
 
     scan_ranges = {
         0: np.linspace(-5, 5, 100),
@@ -49,9 +32,9 @@ def main():
     os.makedirs(pdf_dir, exist_ok=True)
     os.makedirs(png_dir, exist_ok=True)
 
+    # --- 1D scans ---
     for i in range(4):
-        X_vals, Y_vals = scan_single_variable(i, scan_ranges[i], base_state, return_delta)
-
+        X_vals, Y_vals = scan_1d(i, scan_ranges[i], base_state, return_delta)
         for j in range(4):
             plt.figure()
             plt.plot(X_vals, Y_vals[:, j])
@@ -66,6 +49,48 @@ def main():
             plt.savefig(os.path.join(png_dir, f"{fname}.png"))
             plt.show()
             plt.close()
+
+    # --- 2D slices ---
+        # --- 2D slices (only for delta mode) ---
+    if return_delta:
+        print("Generating 2D contour plots...")
+
+        contour_base_dir = f"figures/task_1.2/{tag}_contour"
+        contour_pdf = os.path.join(contour_base_dir, "pdf")
+        contour_png = os.path.join(contour_base_dir, "png")
+        os.makedirs(contour_pdf, exist_ok=True)
+        os.makedirs(contour_png, exist_ok=True)
+
+        pairs = list(combinations(range(4), 2))
+
+        for i, j in pairs:
+            X_coords, Z_outputs = scan_2d(
+                i, j,
+                scan_ranges[i][[0, -1]], scan_ranges[j][[0, -1]],
+                base_state, return_delta,
+                grid_resolution=30
+            )
+
+            for k in range(4):
+                Z = Z_outputs[:, k]
+                plt.figure()
+                triang = Triangulation(X_coords[:, 0], X_coords[:, 1])
+                contour = plt.tricontourf(triang, Z, levels=20, cmap='viridis')
+                plt.colorbar(contour)
+
+                label_i = labels[i]
+                label_j = labels[j]
+                label_k = f"Δ{labels[k]}"
+                plt.xlabel(label_i)
+                plt.ylabel(label_j)
+                plt.title(f"{label_k} over ({label_i}, {label_j})")
+
+                fname = f"{label_k.replace(' ', '_')}_vs_{label_i}_{label_j}"
+                plt.savefig(os.path.join(contour_pdf, f"{fname}.pdf"))
+                plt.savefig(os.path.join(contour_png, f"{fname}.png"))
+                plt.show()
+                plt.close()
+
 
 if __name__ == "__main__":
     main()
