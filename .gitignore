@@ -181,4 +181,5 @@ __pycache__/
 *.pdf
 *.png
 .DS_Store
+.vscode/
 
