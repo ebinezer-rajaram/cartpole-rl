@@ -50,8 +50,7 @@ def main():
             plt.show()
             plt.close()
 
-    # --- 2D slices ---
-        # --- 2D slices (only for delta mode) ---
+    # --- 2D slices (only for delta mode) ---
     if return_delta:
         print("Generating 2D contour plots...")
 
