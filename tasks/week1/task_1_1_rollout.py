@@ -9,7 +9,6 @@ def main():
     os.makedirs(save_dir, exist_ok=True)
     os.makedirs(data_dir, exist_ok=True)
 
-    # Initial conditions: (x, x_dot, theta, theta_dot)
     scenarios = {
         "oscillation_small_theta_dot": np.array([0.0, 0.0, np.pi, 1.0]),
         "oscillation_large_theta_dot": np.array([0.0, 0.0, np.pi, 10.0]),

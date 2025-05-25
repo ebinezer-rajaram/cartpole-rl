@@ -12,8 +12,7 @@ def main():
         "large_x_dot":     np.array([0.0, 10.0, np.pi, 0.0]),
         "full_rotation":   np.array([0.0, 0.0, np.pi, 15.0])
     }
-
-    # Load trained model
+    
     X = np.load("data/task_1.3/X.npy")
     Y = np.load("data/task_1.3/Y.npy")
     C = np.linalg.lstsq(X, Y, rcond=None)[0].T
