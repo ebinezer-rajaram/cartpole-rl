@@ -10,7 +10,7 @@ def main():
     labels = ["x", "x_dot", "theta", "theta_dot"]
 
     # TOGGLE: True for Y = X' - X; False for Y = X'
-    return_delta = True
+    return_delta = False
 
     scan_ranges = {
         0: np.linspace(-5, 5, 100),
@@ -33,24 +33,47 @@ def main():
     os.makedirs(png_dir, exist_ok=True)
 
     # --- 1D scans ---
+    # for i in range(4):
+    #     X_vals, Y_vals = scan_1d(i, scan_ranges[i], base_state, return_delta)
+    #     for j in range(4):
+    #         plt.figure()
+    #         plt.plot(X_vals, Y_vals[:, j])
+    #         plt.xlabel(labels[i])
+    #         ylabel = f"Δ{labels[j]}" if return_delta else f"{labels[j]} (next)"
+    #         plt.ylabel(ylabel)
+    #         plt.title(f"{ylabel} vs {labels[i]}")
+    #         plt.grid(True)
+
+    #         fname = f"{ylabel.replace(' ', '_')}_vs_{labels[i]}"
+    #         plt.savefig(os.path.join(pdf_dir, f"{fname}.pdf"))
+    #         plt.savefig(os.path.join(png_dir, f"{fname}.png"))
+    #         plt.show()
+    #         plt.close()
+
+    # Combined 1D plots 
     for i in range(4):
         X_vals, Y_vals = scan_1d(i, scan_ranges[i], base_state, return_delta)
+        fig, axs = plt.subplots(2, 2, figsize=(12, 8), sharex=True)
+        axs = axs.flatten()
+
         for j in range(4):
-            plt.figure()
-            plt.plot(X_vals, Y_vals[:, j])
-            plt.xlabel(labels[i])
+            axs[j].plot(X_vals, Y_vals[:, j])
+            axs[j].set_xlabel(labels[i])
             ylabel = f"Δ{labels[j]}" if return_delta else f"{labels[j]} (next)"
-            plt.ylabel(ylabel)
-            plt.title(f"{ylabel} vs {labels[i]}")
-            plt.grid(True)
+            axs[j].set_ylabel(ylabel)
+            axs[j].set_title(f"{ylabel} vs {labels[i]}")
+            axs[j].grid(True)
 
-            fname = f"{ylabel.replace(' ', '_')}_vs_{labels[i]}"
-            plt.savefig(os.path.join(pdf_dir, f"{fname}.pdf"))
-            plt.savefig(os.path.join(png_dir, f"{fname}.png"))
-            plt.show()
-            plt.close()
+        fig.suptitle(f"All Outputs vs {labels[i]}")
+        fig.tight_layout(rect=[0, 0.03, 1, 0.95])
 
-    # --- 2D slices (only for delta mode) ---
+        fname = f"combined_outputs_vs_{labels[i]}"
+        fig.savefig(os.path.join(pdf_dir, f"{fname}.pdf"))
+        fig.savefig(os.path.join(png_dir, f"{fname}.png"))
+        plt.show()
+        plt.close(fig)
+
+    # 2D slices (only for delta mode) 
     if return_delta:
         print("Generating 2D contour plots...")
 

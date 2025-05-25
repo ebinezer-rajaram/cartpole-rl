@@ -19,41 +19,77 @@ def main():
     os.makedirs(pdf_dir, exist_ok=True)
     os.makedirs(png_dir, exist_ok=True)
 
-    for j in range(4): 
-        # --- Predicted vs True scatter ---
-        plt.figure()
-        plt.scatter(Y[:, j], Y_pred[:, j], alpha=0.6)
-        plt.plot([Y[:, j].min(), Y[:, j].max()],
-                 [Y[:, j].min(), Y[:, j].max()], 'k--')
-        var = labels[j]
-        plt.xlabel(f"True Δ{var}")
-        plt.ylabel(f"Predicted Δ{var}")
-        plt.title(f"Δ{var}: predicted vs true")
-        plt.grid(True)
+    # for j in range(4): 
+    #     # Predicted vs True scatter 
+    #     plt.figure()
+    #     plt.scatter(Y[:, j], Y_pred[:, j], alpha=0.6)
+    #     plt.plot([Y[:, j].min(), Y[:, j].max()],
+    #              [Y[:, j].min(), Y[:, j].max()], 'k--')
+    #     var = labels[j]
+    #     plt.xlabel(f"True Δ{var}")
+    #     plt.ylabel(f"Predicted Δ{var}")
+    #     plt.title(f"Δ{var}: predicted vs true")
+    #     plt.grid(True)
 
-        fname = f"predicted_vs_true_delta_{var}"
-        plt.savefig(f"{pdf_dir}/{fname}.pdf")
-        plt.savefig(f"{png_dir}/{fname}.png")
-        plt.close()
+    #     fname = f"predicted_vs_true_delta_{var}"
+    #     plt.savefig(f"{pdf_dir}/{fname}.pdf")
+    #     plt.savefig(f"{png_dir}/{fname}.png")
+    #     plt.close()
 
-        # --- Input X_i vs Δ_j line plot ---
-        for i in range(d):
-            input_label = labels[i] if i < 4 else f"action"
-            output_label = labels[j]
+    #     # Input X_i vs Δ_j line plot 
+    #     for i in range(d):
+    #         input_label = labels[i] if i < 4 else f"action"
+    #         output_label = labels[j]
 
-            plt.figure()
-            plt.plot(X[:, i], Y[:, j], 'o', label="true", alpha=0.5)
-            plt.plot(X[:, i], Y_pred[:, j], '.', label="pred", alpha=0.5)
-            plt.xlabel(f"{input_label}")
-            plt.ylabel(f"Δ{output_label}")
-            plt.title(f"Δ{output_label} vs {input_label} (true vs pred)")
-            plt.legend()
-            plt.grid(True)
+    #         plt.figure()
+    #         plt.plot(X[:, i], Y[:, j], 'o', label="true", alpha=0.5)
+    #         plt.plot(X[:, i], Y_pred[:, j], '.', label="pred", alpha=0.5)
+    #         plt.xlabel(f"{input_label}")
+    #         plt.ylabel(f"Δ{output_label}")
+    #         plt.title(f"Δ{output_label} vs {input_label} (true vs pred)")
+    #         plt.legend()
+    #         plt.grid(True)
 
-            fname = f"delta_{output_label}_vs_{input_label}_true_vs_pred"
-            plt.savefig(f"{pdf_dir}/{fname}.pdf")
-            plt.savefig(f"{png_dir}/{fname}.png")
-            plt.close()
+    #         fname = f"delta_{output_label}_vs_{input_label}_true_vs_pred"
+    #         plt.savefig(f"{pdf_dir}/{fname}.pdf")
+    #         plt.savefig(f"{png_dir}/{fname}.png")
+    #         plt.close()
+            
+    # Combined Δ_j vs X_i plots (true vs pred) 
+    for i in range(d):
+        input_label = labels[i] if i < 4 else "action"
+        fig, axs = plt.subplots(2, 2, figsize=(12, 8), sharex=True)
+        axs = axs.flatten()
+
+        for j in range(4):
+            axs[j].plot(X[:, i], Y[:, j], 'o', label="true", alpha=0.5)
+            axs[j].plot(X[:, i], Y_pred[:, j], '.', label="pred", alpha=0.5)
+            axs[j].set_ylabel(f"Δ{labels[j]}")
+            axs[j].set_title(f"Δ{labels[j]} vs {input_label}")
+            axs[j].grid(True)
+            axs[j].legend()
+
+        axs[-1].set_xlabel(input_label)
+        fig.suptitle(f"All Δs vs {input_label} (true vs predicted)")
+        fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+
+        fname = f"combined_deltas_vs_{input_label}_true_vs_pred"
+        fig.savefig(f"{pdf_dir}/{fname}.pdf")
+        fig.savefig(f"{png_dir}/{fname}.png")
+        plt.show()
+        plt.close(fig)
+        
+    
+    mse_per_dim = np.mean((Y - Y_pred)**2, axis=0)
+    labels = ["x", "x_dot", "theta", "theta_dot"]
+
+    print("\nMean Squared Error per output dimension:")
+    for j, mse in enumerate(mse_per_dim):
+        print(f"Δ{labels[j]}: {mse:.6f}")
+
+    total_mse = np.mean((Y - Y_pred)**2)
+    print(f"\nTotal MSE across all outputs: {total_mse:.6f}")
+
 
 
 if __name__ == "__main__":
