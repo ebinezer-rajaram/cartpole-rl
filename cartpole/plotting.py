@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import animation
 import os
+import matplotlib.tri as tri
 
 def _make_output_dirs(base_dir):
     dirs = {
@@ -150,4 +151,48 @@ def plot_all_deltas_vs_inputs(X, Y_true, Y_pred, labels, out_dir):
         fig.savefig(os.path.join(out_dir["png"], f"{fname}.png"))
         plt.show()
         plt.close(fig)
+        
+def plot_scan_comparison(scan_vals, Y_true, Y_pred, input_label, labels, out_dir, tag):
+    """
+    Plot all Δj vs scan input, comparing true and predicted.
+    """
+    fig, axs = plt.subplots(2, 2, figsize=(12, 8), sharex=True)
+    axs = axs.flatten()
+
+    for j in range(4):
+        axs[j].plot(scan_vals, Y_true[:, j], label="true", alpha=0.6)
+        axs[j].plot(scan_vals, Y_pred[:, j], '--', label=tag, alpha=0.6)
+        axs[j].set_ylabel(f"Δ{labels[j]}")
+        axs[j].set_title(f"Δ{labels[j]} vs {input_label}")
+        axs[j].legend()
+        axs[j].grid(True)
+
+    axs[-1].set_xlabel(input_label)
+    fig.suptitle(f"All Δs vs {input_label} (true vs {tag})")
+    fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+
+    fname = f"combined_deltas_vs_{input_label}"
+    plt.savefig(os.path.join(out_dir["pdf"], f"{fname}.pdf"))
+    plt.savefig(os.path.join(out_dir["png"], f"{fname}.png"))
+    plt.close(fig)
+    
+
+
+def plot_2d_slices(X_coords, Z_true, Z_pred, i_label, j_label, output_label, out_dir, tag):
+    triang = tri.Triangulation(X_coords[:, 0], X_coords[:, 1])
+
+    for name, Z in zip(["true", tag], [Z_true, Z_pred]):
+        plt.figure()
+        contour = plt.tricontourf(triang, Z, levels=20, cmap='viridis')
+        plt.colorbar(contour)
+        plt.xlabel(i_label)
+        plt.ylabel(j_label)
+        plt.title(f"{output_label} over ({i_label}, {j_label}) — {name}")
+
+        fname = f"{output_label.replace('Δ', 'delta')}_vs_{i_label}_{j_label}_{name}"
+        plt.savefig(os.path.join(out_dir["pdf"], f"{fname}.pdf"))
+        plt.savefig(os.path.join(out_dir["png"], f"{fname}.png"))
+        plt.close()
+
+
 

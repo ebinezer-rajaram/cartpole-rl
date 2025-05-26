@@ -1,6 +1,6 @@
 import numpy as np
 from .CartPole import CartPole, remap_angle
-
+from .kernels import predict_kernel_model
 
 def rollout(init_state, T=200, action_fn=None, remap=True, visual=False):
     """
@@ -57,4 +57,28 @@ def model_rollout(X0, C, T, remap_theta=True):
             x[2] = remap_angle(x[2])
 
     return X
+
+def nonlinear_model_rollout(x0, alpha, basis_X, lengthscales, T):
+    """
+    Roll out a nonlinear (kernel) model starting from x0.
+
+    Parameters:
+    - x0: initial state (4,)
+    - alpha: learned coefficient matrix (M, 4)
+    - basis_X: basis centers (M, 4)
+    - lengthscales: kernel widths (4,)
+    - T: time steps
+
+    Returns:
+    - trajectory: (T, 4) array of state evolution
+    """
+    X = np.zeros((T, 4))
+    x = x0.copy()
+    for t in range(T):
+        X[t] = x
+        dx = predict_kernel_model(x[None, :], basis_X, alpha, lengthscales)[0]
+        x = x + dx
+        x[2] = remap_angle(x[2])
+    return X
+
 
