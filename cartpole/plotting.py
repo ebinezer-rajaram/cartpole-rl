@@ -88,3 +88,66 @@ def animate_cartpole(traj):
     )
 
     plt.show()
+    
+    
+def plot_predicted_vs_true_deltas(Y_true, Y_pred, labels, out_dir):
+    for j in range(4):
+        plt.figure()
+        plt.scatter(Y_true[:, j], Y_pred[:, j], alpha=0.5)
+        plt.plot([Y_true[:, j].min(), Y_true[:, j].max()],
+                 [Y_true[:, j].min(), Y_true[:, j].max()], 'k--')
+        plt.xlabel(f"True Δ{labels[j]}")
+        plt.ylabel(f"Pred Δ{labels[j]}")
+        plt.title(f"Δ{labels[j]}: Predicted vs True")
+        plt.grid(True)
+
+        fname = f"predicted_vs_true_delta_{labels[j]}"
+        plt.savefig(os.path.join(out_dir["pdf"], f"{fname}.pdf"))
+        plt.savefig(os.path.join(out_dir["png"], f"{fname}.png"))
+        plt.close()
+
+def plot_deltas_vs_inputs(X, Y_true, Y_pred, labels, out_dir):
+    for i in range(4):
+        fig, axs = plt.subplots(2, 2, figsize=(12, 8), sharex=True)
+        axs = axs.flatten()
+        for j in range(4):
+            axs[j].plot(X[:, i], Y_true[:, j], 'o', label='true', alpha=0.4)
+            axs[j].plot(X[:, i], Y_pred[:, j], '.', label='pred', alpha=0.4)
+            axs[j].set_ylabel(f"Δ{labels[j]}")
+            axs[j].set_title(f"Δ{labels[j]} vs {labels[i]}")
+            axs[j].legend()
+            axs[j].grid(True)
+        axs[-1].set_xlabel(labels[i])
+        fig.suptitle(f"All Δs vs {labels[i]} (true vs predicted)")
+        fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+
+        fname = f"combined_deltas_vs_{labels[i]}"
+        plt.savefig(os.path.join(out_dir["pdf"], f"{fname}.pdf"))
+        plt.savefig(os.path.join(out_dir["png"], f"{fname}.png"))
+        plt.close()
+        
+def plot_all_deltas_vs_inputs(X, Y_true, Y_pred, labels, out_dir):
+    d = X.shape[1]
+    for i in range(d):
+        input_label = labels[i] if i < 4 else "action"
+        fig, axs = plt.subplots(2, 2, figsize=(12, 8), sharex=True)
+        axs = axs.flatten()
+
+        for j in range(4):
+            axs[j].plot(X[:, i], Y_true[:, j], 'o', label="true", alpha=0.5)
+            axs[j].plot(X[:, i], Y_pred[:, j], '.', label="pred", alpha=0.5)
+            axs[j].set_ylabel(f"Δ{labels[j]}")
+            axs[j].set_title(f"Δ{labels[j]} vs {input_label}")
+            axs[j].grid(True)
+            axs[j].legend()
+
+        axs[-1].set_xlabel(input_label)
+        fig.suptitle(f"All Δs vs {input_label} (true vs predicted)")
+        fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+
+        fname = f"combined_deltas_vs_{input_label}_true_vs_pred"
+        fig.savefig(os.path.join(out_dir["pdf"], f"{fname}.pdf"))
+        fig.savefig(os.path.join(out_dir["png"], f"{fname}.png"))
+        plt.show()
+        plt.close(fig)
+
