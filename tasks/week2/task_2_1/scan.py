@@ -1,5 +1,4 @@
 import numpy as np
-import os
 
 from cartpole.kernels import fit_kernel_model, predict_kernel_model
 from cartpole.plotting import _make_output_dirs, plot_scan_comparison

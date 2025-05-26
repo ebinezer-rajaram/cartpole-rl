@@ -1,5 +1,4 @@
 import numpy as np
-import os
 from itertools import combinations
 
 from cartpole.kernels import fit_kernel_model, predict_kernel_model
