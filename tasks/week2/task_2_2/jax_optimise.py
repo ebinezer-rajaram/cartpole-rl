@@ -6,7 +6,6 @@ from scipy.optimize import minimize
 import os
 
 from cartpole.data import collect_dataset
-from cartpole.kernels import periodic_kernel  # for reference
 from cartpole.plotting import _make_output_dirs, plot_predicted_vs_true_deltas, plot_all_deltas_vs_inputs
 
 def periodic_kernel_jax(X1, X2, lengthscales, theta_index=2):
