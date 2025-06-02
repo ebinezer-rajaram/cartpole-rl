@@ -1,7 +1,7 @@
 import numpy as np
-import jax
+import tasks.week2.task_2_2.jax_regression as jax_regression
 import jax.numpy as jnp
-from jax import jit, grad
+from tasks.week2.task_2_2.jax_regression import jit, grad
 from scipy.optimize import minimize
 import os
 
@@ -15,7 +15,7 @@ def periodic_kernel_jax(X1, X2, lengthscales, theta_index=2):
         scaled = diff / lengthscales
         return jnp.exp(-0.5 * jnp.sum(scaled ** 2))
 
-    return jax.vmap(lambda x: jax.vmap(lambda y: kernel_fn(x, y))(X2))(X1)
+    return jax_regression.vmap(lambda x: jax_regression.vmap(lambda y: kernel_fn(x, y))(X2))(X1)
 
 @jit
 def predict_kernel(X_test, X_basis, alpha, lengthscales):
@@ -64,7 +64,7 @@ def main():
     print("\nInitial validation MSE:", mse_init)
 
     objective = lambda p: float(loss_fn(p, X_train, Y_train, X_val, Y_val, X_basis))
-    grad_fn = jax.grad(loss_fn)
+    grad_fn = jax_regression.grad(loss_fn)
 
     result = minimize(
         objective,

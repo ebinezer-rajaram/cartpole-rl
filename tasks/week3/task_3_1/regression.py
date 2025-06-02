@@ -4,6 +4,7 @@ import jax.numpy as jnp
 from jax import jit, grad
 from scipy.optimize import minimize
 import os
+from sklearn.cluster import KMeans
 
 from cartpole.plotting import (
     _make_output_dirs,
@@ -61,9 +62,15 @@ def main():
     X_train, Y_train = X[:split], Y[:split]
     X_val, Y_val = X[split:], Y[split:]
 
-    rng = np.random.default_rng(0)
-    basis_idx = rng.choice(split, size=100, replace=False)
-    X_basis = X_train[basis_idx]
+    # rng = np.random.default_rng(0)
+    # basis_idx = rng.choice(split, size=100, replace=False)
+    # X_basis = X_train[basis_idx]
+
+    M = 200  # or 500, 1000
+    kmeans = KMeans(n_clusters=M, n_init=10, random_state=0)
+    kmeans.fit(X_train)
+    X_basis = kmeans.cluster_centers_
+
 
     init_log_lengthscales = np.log(np.std(X_train, axis=0))
     init_log_lambda = np.log(1e-4)

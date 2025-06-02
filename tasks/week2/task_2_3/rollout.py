@@ -5,7 +5,7 @@ import os
 from cartpole.simulation import rollout
 from cartpole.CartPole import remap_angle
 from cartpole.plotting import _make_output_dirs
-from .jax_optimise_2_3 import predict_kernel  # ✅ JAX-based model
+from .jax_regression import predict_kernel  # ✅ JAX-based model
 
 def to_sincos_features(x):
     return np.array([
