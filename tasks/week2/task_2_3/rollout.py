@@ -4,16 +4,16 @@ import os
 
 from cartpole.simulation import rollout
 from cartpole.CartPole import remap_angle
-from cartpole.kernels import predict_kernel_model
 from cartpole.plotting import _make_output_dirs
+from .jax_optimise_2_3 import predict_kernel  # ✅ JAX-based model
 
 def to_sincos_features(x):
     return np.array([
-        x[0],          # x
-        x[1],          # x_dot
-        np.sin(x[2]),  # sin(theta)
-        np.cos(x[2]),  # cos(theta)
-        x[3]           # theta_dot
+        x[0],
+        x[1],
+        np.sin(x[2]),
+        np.cos(x[2]),
+        x[3]
     ])
 
 def model_rollout_sincos(x0, alpha, basis_X, lengthscales, T):
@@ -21,9 +21,9 @@ def model_rollout_sincos(x0, alpha, basis_X, lengthscales, T):
     x = x0.copy()
     for t in range(T):
         X[t] = x
-        x_feat = to_sincos_features(x)
-        dx = predict_kernel_model(x_feat[None, :], basis_X, alpha, lengthscales)[0]
-        x = x + dx
+        x_feat = to_sincos_features(x)[None, :]
+        dx = predict_kernel(x_feat, basis_X, alpha, lengthscales)[0]
+        x = np.array(x + dx)  # force NumPy for mutable update
         x[2] = remap_angle(x[2])
     return X
 
@@ -46,14 +46,12 @@ def main():
         "full_rotation":   np.array([0.0, 0.0, np.pi, 15.0])
     }
 
-    # Load sincos model
     data = np.load("models/task_2.3/model_kernel_optimized_sincos.npz")
     X_basis = data["X_basis"]
     alpha = data["alpha"]
     lengthscales = data["lengthscales"]
 
-    # Rollout parameters
-    T = 200
+    T = 20
     out_dir = _make_output_dirs("figures/task_2.3/rollout")
 
     for name, x0 in initial_conditions.items():
@@ -76,7 +74,6 @@ def main():
             plt.savefig(os.path.join(out_dir["png"], f"{fname}.png"))
             plt.close()
 
-        # Metrics
         t_dev = time_to_deviation(traj_true, traj_model)
         cycles = count_oscillations(traj_model[:, 2])
         print(f"  → time to deviation (>0.5): {t_dev} steps")
