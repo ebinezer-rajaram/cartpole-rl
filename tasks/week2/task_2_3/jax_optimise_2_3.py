@@ -53,33 +53,28 @@ def main():
     output_labels = ["x", "x_dot", "theta", "theta_dot"]
     out_dir = _make_output_dirs("figures/task_2.3/optimization")
 
-    # Load and transform data
     X_raw, Y = collect_dataset(1000)
     X = to_sincos_features(X_raw)
 
     split = 800
     X_train, Y_train = X[:split], Y[:split]
     X_val, Y_val = X[split:], Y[split:]
-
-    # Basis centers
+    
     rng = np.random.default_rng(0)
     basis_idx = rng.choice(split, size=100, replace=False)
     X_basis = X_train[basis_idx]
 
-    # Initial hyperparams (log-space)
     init_log_lengthscales = np.log(np.std(X_train, axis=0))
     init_log_lambda = np.log(1e-4)
     init_params = np.concatenate([init_log_lengthscales, [init_log_lambda]])
 
     print("Initial log params:", init_params)
 
-    # Pre-optimization MSE
     alpha_init, _, _ = fit_model_jax(X_train, Y_train, X_basis, init_params)
     Y_val_pred_init = predict_kernel(X_val, X_basis, alpha_init, jnp.exp(init_params[:5]))
     mse_init = np.mean((Y_val - np.array(Y_val_pred_init))**2)
     print("\nInitial validation MSE:", mse_init)
 
-    # Optimization
     objective = lambda p: float(loss_fn(p, X_train, Y_train, X_val, Y_val, X_basis))
     grad_fn = jax.grad(loss_fn)
 
@@ -101,22 +96,18 @@ def main():
     print("\nOptimal lengthscales:", opt_lengthscales)
     print("Optimal lambda:", opt_lambda)
 
-    # Final prediction
     alpha, _, _ = fit_model_jax(X_train, Y_train, X_basis, opt_log_params)
     Y_val_pred = predict_kernel(X_val, X_basis, alpha, jnp.exp(opt_log_params[:5]))
 
-    # Plot
     plot_predicted_vs_true_deltas(np.array(Y_val), np.array(Y_val_pred), output_labels, out_dir)
     plot_all_deltas_vs_inputs(np.array(X_val), np.array(Y_val), np.array(Y_val_pred), output_labels, out_dir)
 
-    # MSE report
     mse_dim = np.mean((Y_val - np.array(Y_val_pred))**2, axis=0)
     print("\nMSE per output dim (val):")
     for i, mse in enumerate(mse_dim):
         print(f"Δ{output_labels[i]}: {mse:.6f}")
     print(f"Total MSE: {np.mean(mse_dim):.6f}")
 
-    # Save model
     os.makedirs("models/task_2.3", exist_ok=True)
     np.savez("models/task_2.3/model_kernel_optimized_sincos.npz",
              X_basis=np.array(X_basis),
