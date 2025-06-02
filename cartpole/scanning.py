@@ -110,4 +110,58 @@ def scan2d_model_vs_true(i, j, range_i, range_j, base_state, model_predict_fn, g
 
     return np.array(X_coords), np.array(Y_true), np.array(Y_pred)
 
+def scan_model_vs_true_action(index, scan_vals, base_state_action, model_predict_fn):
+    Y_true = []
+    Y_pred = []
+
+    for val in scan_vals:
+        state_action = base_state_action.copy()
+        state_action[index] = val
+
+        state = state_action[:4]
+        action = state_action[4]
+
+        env = CartPole()
+        env.setState(state)
+        env.performAction(action)
+        delta_true = env.getState() - state
+        delta_pred = model_predict_fn(state_action)
+
+        Y_true.append(delta_true)
+        Y_pred.append(delta_pred)
+
+    return np.array(scan_vals), np.array(Y_true), np.array(Y_pred)
+
+
+def scan2d_model_vs_true_action(i, j, range_i, range_j, base_state_action, model_predict_fn, grid_resolution=30):
+    scan_i = np.linspace(range_i[0], range_i[1], grid_resolution)
+    scan_j = np.linspace(range_j[0], range_j[1], grid_resolution)
+    grid_i, grid_j = np.meshgrid(scan_i, scan_j)
+    points = np.vstack([grid_i.ravel(), grid_j.ravel()]).T
+
+    X_coords = []
+    Y_true = []
+    Y_pred = []
+
+    for p in points:
+        state_action = base_state_action.copy()
+        state_action[i] = p[0]
+        state_action[j] = p[1]
+
+        state = state_action[:4]
+        action = state_action[4]
+
+        env = CartPole()
+        env.setState(state)
+        env.performAction(action)
+        delta_true = env.getState() - state
+        delta_pred = model_predict_fn(state_action)
+
+        X_coords.append(p)
+        Y_true.append(delta_true)
+        Y_pred.append(delta_pred)
+
+    return np.array(X_coords), np.array(Y_true), np.array(Y_pred)
+
+
 
