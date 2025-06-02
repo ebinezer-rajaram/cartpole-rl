@@ -3,3 +3,4 @@ matplotlib
 pytest
 jax
 scipy
+scikit-learn
