@@ -56,3 +56,5 @@ def rollout_jax(x0, policy, T, params):
         return next_state, next_state
     _, traj = jax.lax.scan(step, x0, None, length=T)
     return traj
+
+

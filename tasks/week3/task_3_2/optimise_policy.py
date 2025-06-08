@@ -74,3 +74,35 @@ def main():
 
 if __name__ == "__main__":
     main()
+'''
+=== GOOD_UPRIGHT_SIG0 ===
+Initial state: [0.  0.  0.1 0. ]
+Sigma_l: [0.5  0.4  0.05 0.25]
+Optimized policy: [ 0.46315005  3.97275634 34.06590128  4.79489273]
+Final loss: 1.4671862125396729
+=== BAD_DOWNWARD_SIG0 ===
+Initial state: [0.        0.        3.1415927 0.       ]
+Sigma_l: [0.5  0.4  0.05 0.25]
+Optimized policy: [0. 0. 0. 0.]
+Final loss: 20.0
+=== RANDOM_REALISTIC_SIG0 ===
+Initial state: [ 0.08 -0.13  0.09  0.17]
+Sigma_l: [0.5  0.4  0.05 0.25]
+Optimized policy: [ 1.17947114  4.70547966 34.93935168  5.05944426]
+Final loss: 1.4416193962097168
+=== GOOD_UPRIGHT_SIG1 ===
+Initial state: [0.  0.  0.1 0. ]
+Sigma_l: [0.3  0.3  0.05 0.2 ]
+Optimized policy: [ 1.78284449  4.81798606 35.08025264  5.09755593]
+Final loss: 1.7844563722610474
+=== BAD_DOWNWARD_SIG1 ===
+Initial state: [0.        0.        3.1415927 0.       ]
+Sigma_l: [0.3  0.3  0.05 0.2 ]
+Optimized policy: [0. 0. 0. 0.]
+Final loss: 20.0
+=== RANDOM_REALISTIC_SIG1 ===
+Initial state: [ 0.08 -0.13  0.09  0.17]
+Sigma_l: [0.3  0.3  0.05 0.2 ]
+Optimized policy: [  0.47655857 -14.27988399  21.87163987  -1.8609635 ]
+Final loss: 2.448730707168579
+'''
