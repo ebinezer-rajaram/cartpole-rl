@@ -4,6 +4,17 @@ from matplotlib import animation
 import os
 import matplotlib.tri as tri
 
+# Set global plotting parameters for better readability in reports
+plt.rcParams.update({
+    'font.size': 13,
+    'axes.titlesize': 15,
+    'axes.labelsize': 14,
+    'xtick.labelsize': 12,
+    'ytick.labelsize': 12,
+    'legend.fontsize': 13,
+    'figure.titlesize': 16
+})
+
 def _make_output_dirs(base_dir):
     dirs = {
         "png": os.path.join(base_dir, "png"),
@@ -26,11 +37,10 @@ def plot_time_series(traj, name, base_dir):
 
     axs[-1].set_xlabel("Time step")
     fig.suptitle(f"Time Series - {name}")
-    fig.tight_layout()
-    plt.show()
+    plt.subplots_adjust(hspace=0.1, top=0.92)
 
-    fig.savefig(os.path.join(dirs["png"], f"{name}_timeseries.png"))
-    fig.savefig(os.path.join(dirs["pdf"], f"{name}_timeseries.pdf"))
+    fig.savefig(os.path.join(dirs["png"], f"{name}_timeseries.png"), bbox_inches='tight')
+    fig.savefig(os.path.join(dirs["pdf"], f"{name}_timeseries.pdf"), bbox_inches='tight')
     plt.close(fig)
 
 def plot_phase_portraits(traj, name, base_dir):
@@ -46,11 +56,10 @@ def plot_phase_portraits(traj, name, base_dir):
         ax.grid(True)
 
     fig.suptitle(f"Phase Portraits - {name}")
-    fig.tight_layout()
-    plt.show()
+    plt.subplots_adjust(wspace=0.3, top=0.85)
 
-    fig.savefig(os.path.join(dirs["png"], f"{name}_phase.png"))
-    fig.savefig(os.path.join(dirs["pdf"], f"{name}_phase.pdf"))
+    fig.savefig(os.path.join(dirs["png"], f"{name}_phase.png"), bbox_inches='tight')
+    fig.savefig(os.path.join(dirs["pdf"], f"{name}_phase.pdf"), bbox_inches='tight')
     plt.close(fig)
 
 def animate_cartpole(traj):
@@ -87,13 +96,12 @@ def animate_cartpole(traj):
     ani = animation.FuncAnimation(
         fig, animate, init_func=init, frames=len(x), interval=50, blit=True
     )
-
-    plt.show()
     
+    return ani
     
 def plot_predicted_vs_true_deltas(Y_true, Y_pred, labels, out_dir):
     for j in range(4):
-        plt.figure()
+        plt.figure(figsize=(6, 5))
         plt.scatter(Y_true[:, j], Y_pred[:, j], alpha=0.5)
         plt.plot([Y_true[:, j].min(), Y_true[:, j].max()],
                  [Y_true[:, j].min(), Y_true[:, j].max()], 'k--')
@@ -103,8 +111,8 @@ def plot_predicted_vs_true_deltas(Y_true, Y_pred, labels, out_dir):
         plt.grid(True)
 
         fname = f"predicted_vs_true_delta_{labels[j]}"
-        plt.savefig(os.path.join(out_dir["pdf"], f"{fname}.pdf"))
-        plt.savefig(os.path.join(out_dir["png"], f"{fname}.png"))
+        plt.savefig(os.path.join(out_dir["pdf"], f"{fname}.pdf"), bbox_inches='tight')
+        plt.savefig(os.path.join(out_dir["png"], f"{fname}.png"), bbox_inches='tight')
         plt.close()
 
 def plot_deltas_vs_inputs(X, Y_true, Y_pred, labels, out_dir):
@@ -120,11 +128,11 @@ def plot_deltas_vs_inputs(X, Y_true, Y_pred, labels, out_dir):
             axs[j].grid(True)
         axs[-1].set_xlabel(labels[i])
         fig.suptitle(f"All Δs vs {labels[i]} (true vs predicted)")
-        fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+        plt.subplots_adjust(wspace=0.15, hspace=0.2, top=0.9)
 
         fname = f"combined_deltas_vs_{labels[i]}"
-        plt.savefig(os.path.join(out_dir["pdf"], f"{fname}.pdf"))
-        plt.savefig(os.path.join(out_dir["png"], f"{fname}.png"))
+        plt.savefig(os.path.join(out_dir["pdf"], f"{fname}.pdf"), bbox_inches='tight')
+        plt.savefig(os.path.join(out_dir["png"], f"{fname}.png"), bbox_inches='tight')
         plt.close()
         
 def plot_all_deltas_vs_inputs(X, Y_true, Y_pred, labels, out_dir):
@@ -144,12 +152,11 @@ def plot_all_deltas_vs_inputs(X, Y_true, Y_pred, labels, out_dir):
 
         axs[-1].set_xlabel(input_label)
         fig.suptitle(f"All Δs vs {input_label} (true vs predicted)")
-        fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+        plt.subplots_adjust(wspace=0.15, hspace=0.2, top=0.9)
 
         fname = f"combined_deltas_vs_{input_label}_true_vs_pred"
-        fig.savefig(os.path.join(out_dir["pdf"], f"{fname}.pdf"))
-        fig.savefig(os.path.join(out_dir["png"], f"{fname}.png"))
-        plt.show()
+        fig.savefig(os.path.join(out_dir["pdf"], f"{fname}.pdf"), bbox_inches='tight')
+        fig.savefig(os.path.join(out_dir["png"], f"{fname}.png"), bbox_inches='tight')
         plt.close(fig)
         
 def plot_scan_comparison(scan_vals, Y_true, Y_pred, input_label, labels, out_dir, tag):
@@ -160,8 +167,8 @@ def plot_scan_comparison(scan_vals, Y_true, Y_pred, input_label, labels, out_dir
     axs = axs.flatten()
 
     for j in range(4):
-        axs[j].plot(scan_vals, Y_true[:, j], label="true", alpha=0.6)
-        axs[j].plot(scan_vals, Y_pred[:, j], '--', label=tag, alpha=0.6)
+        axs[j].plot(scan_vals, Y_true[:, j], label="true", alpha=0.6, linewidth=2.0)
+        axs[j].plot(scan_vals, Y_pred[:, j], '--', label=tag, alpha=0.6, linewidth=2.0)
         axs[j].set_ylabel(f"Δ{labels[j]}")
         axs[j].set_title(f"Δ{labels[j]} vs {input_label}")
         axs[j].legend()
@@ -169,29 +176,29 @@ def plot_scan_comparison(scan_vals, Y_true, Y_pred, input_label, labels, out_dir
 
     axs[-1].set_xlabel(input_label)
     fig.suptitle(f"All Δs vs {input_label} (true vs {tag})")
-    fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+    plt.subplots_adjust(wspace=0.15, hspace=0.2, top=0.9)
 
     fname = f"combined_deltas_vs_{input_label}"
-    plt.savefig(os.path.join(out_dir["pdf"], f"{fname}.pdf"))
-    plt.savefig(os.path.join(out_dir["png"], f"{fname}.png"))
+    plt.savefig(os.path.join(out_dir["pdf"], f"{fname}.pdf"), bbox_inches='tight')
+    plt.savefig(os.path.join(out_dir["png"], f"{fname}.png"), bbox_inches='tight')
     plt.close(fig)
     
-
-
 def plot_2d_slices(X_coords, Z_true, Z_pred, i_label, j_label, output_label, out_dir, tag):
     triang = tri.Triangulation(X_coords[:, 0], X_coords[:, 1])
 
     for name, Z in zip(["true", tag], [Z_true, Z_pred]):
-        plt.figure()
+        plt.figure(figsize=(7, 6))
         contour = plt.tricontourf(triang, Z, levels=20, cmap='viridis')
-        plt.colorbar(contour)
+        cbar = plt.colorbar(contour)
+        cbar.ax.tick_params(labelsize=12)
         plt.xlabel(i_label)
         plt.ylabel(j_label)
         plt.title(f"{output_label} over ({i_label}, {j_label}) — {name}")
+        plt.tight_layout()
 
         fname = f"{output_label.replace('Δ', 'delta')}_vs_{i_label}_{j_label}_{name}"
-        plt.savefig(os.path.join(out_dir["pdf"], f"{fname}.pdf"))
-        plt.savefig(os.path.join(out_dir["png"], f"{fname}.png"))
+        plt.savefig(os.path.join(out_dir["pdf"], f"{fname}.pdf"), bbox_inches='tight')
+        plt.savefig(os.path.join(out_dir["png"], f"{fname}.png"), bbox_inches='tight')
         plt.close()
 
 

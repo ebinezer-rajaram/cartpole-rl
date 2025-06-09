@@ -4,6 +4,17 @@ import os
 
 from cartpole.simulation import rollout, model_rollout
 
+# Set global plotting parameters for better readability in reports
+plt.rcParams.update({
+    'font.size': 13,
+    'axes.titlesize': 15,
+    'axes.labelsize': 14,
+    'xtick.labelsize': 12,
+    'ytick.labelsize': 12,
+    'legend.fontsize': 13,
+    'figure.titlesize': 16
+})
+
 def main():
     labels = ["x", "x_dot", "theta", "theta_dot"]
     initial_conditions = {
@@ -29,19 +40,41 @@ def main():
         traj_model = model_rollout(init_state, C, T=T, remap_theta=True)
 
         for i in range(4):
-            plt.figure()
-            plt.plot(traj_true[:, i], label="true", alpha=0.8)
-            plt.plot(traj_model[:, i], label="model", linestyle='--', alpha=0.8)
+            plt.figure(figsize=(8, 6))
+            plt.plot(traj_true[:, i], label="true", alpha=0.8, linewidth=2.0)
+            plt.plot(traj_model[:, i], label="model", linestyle='--', alpha=0.8, linewidth=2.0)
             plt.xlabel("time step")
             plt.ylabel(labels[i])
             plt.title(f"{labels[i]} over time — {name}")
             plt.legend()
             plt.grid(True)
+            plt.tight_layout()
 
             fname = f"{labels[i]}_evolution_{name}"
-            plt.savefig(f"{pdf_dir}/{fname}.pdf")
-            plt.savefig(f"{png_dir}/{fname}.png")
+            plt.savefig(f"{pdf_dir}/{fname}.pdf", bbox_inches='tight')
+            plt.savefig(f"{png_dir}/{fname}.png", bbox_inches='tight')
             plt.close()
+
+        # Combined plot with all variables
+        fig, axs = plt.subplots(2, 2, figsize=(12, 8), sharex=True)
+        axs = axs.flatten()
+        
+        for i in range(4):
+            axs[i].plot(traj_true[:, i], label="true", alpha=0.8, linewidth=2.0)
+            axs[i].plot(traj_model[:, i], label="model", linestyle='--', alpha=0.8, linewidth=2.0)
+            axs[i].set_ylabel(labels[i])
+            axs[i].set_title(f"{labels[i]} evolution")
+            axs[i].grid(True)
+            axs[i].legend()
+            
+        axs[-1].set_xlabel("time step")
+        fig.suptitle(f"State evolution — {name}")
+        plt.subplots_adjust(wspace=0.15, hspace=0.2, top=0.9)
+        
+        fname = f"combined_evolution_{name}"
+        fig.savefig(f"{pdf_dir}/{fname}.pdf", bbox_inches='tight')
+        fig.savefig(f"{png_dir}/{fname}.png", bbox_inches='tight')
+        plt.close(fig)
 
 if __name__ == "__main__":
     main()

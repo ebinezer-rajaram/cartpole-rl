@@ -50,13 +50,13 @@ def main():
         gravity=9.8,
         sim_steps=50,
         delta_time=0.1,
-        max_force=40.0,
+        max_force=20.0,
     )
     T = 20
 
     sigma_l_list = [
         jnp.array([0.5, 0.4, 0.05, 0.25]),
-        jnp.array([0.3, 0.3, 0.05, 0.2]),
+        # jnp.array([0.3, 0.3, 0.05, 0.2]),
         # Add more as needed
     ]
 

@@ -1,7 +1,7 @@
 import numpy as np
 import os
 from cartpole.simulation import rollout
-from cartpole.plotting import plot_time_series, plot_phase_portraits, animate_cartpole
+from cartpole.plotting import plot_time_series, plot_phase_portraits
 
 def main():
     save_dir = "figures/task_1.1"
@@ -24,10 +24,6 @@ def main():
         np.save(os.path.join(data_dir, f"{name}.npy"), traj)
         plot_time_series(traj, name, save_dir)
         plot_phase_portraits(traj, name, save_dir)
-
-        # if name == "rotation_theta_dot":
-        #     print("Showing animation for: rotation_theta_dot")
-        #     animate_cartpole(traj)
 
 if __name__ == "__main__":
     main()

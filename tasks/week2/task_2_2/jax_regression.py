@@ -1,12 +1,24 @@
 import numpy as np
-import tasks.week2.task_2_2.jax_regression as jax_regression
+import matplotlib.pyplot as plt
+import jax
 import jax.numpy as jnp
-from tasks.week2.task_2_2.jax_regression import jit, grad
+from jax import jit, grad, vmap
 from scipy.optimize import minimize
 import os
 
 from cartpole.data import collect_dataset
 from cartpole.plotting import _make_output_dirs, plot_predicted_vs_true_deltas, plot_all_deltas_vs_inputs
+
+# Set global plotting parameters for better readability in reports
+plt.rcParams.update({
+    'font.size': 13,
+    'axes.titlesize': 15,
+    'axes.labelsize': 14,
+    'xtick.labelsize': 12,
+    'ytick.labelsize': 12,
+    'legend.fontsize': 13,
+    'figure.titlesize': 16
+})
 
 def periodic_kernel_jax(X1, X2, lengthscales, theta_index=2):
     def kernel_fn(x, y):
@@ -15,7 +27,7 @@ def periodic_kernel_jax(X1, X2, lengthscales, theta_index=2):
         scaled = diff / lengthscales
         return jnp.exp(-0.5 * jnp.sum(scaled ** 2))
 
-    return jax_regression.vmap(lambda x: jax_regression.vmap(lambda y: kernel_fn(x, y))(X2))(X1)
+    return vmap(lambda x: vmap(lambda y: kernel_fn(x, y))(X2))(X1)
 
 @jit
 def predict_kernel(X_test, X_basis, alpha, lengthscales):
@@ -64,7 +76,7 @@ def main():
     print("\nInitial validation MSE:", mse_init)
 
     objective = lambda p: float(loss_fn(p, X_train, Y_train, X_val, Y_val, X_basis))
-    grad_fn = jax_regression.grad(loss_fn)
+    grad_fn = grad(loss_fn)
 
     result = minimize(
         objective,

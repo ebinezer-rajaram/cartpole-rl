@@ -6,6 +6,17 @@ from matplotlib.tri import Triangulation
 
 from cartpole.scanning import scan_1d, scan_2d
 
+# Set global plotting parameters for better readability in reports
+plt.rcParams.update({
+    'font.size': 13,
+    'axes.titlesize': 15,
+    'axes.labelsize': 14,
+    'xtick.labelsize': 12,
+    'ytick.labelsize': 12,
+    'legend.fontsize': 13,
+    'figure.titlesize': 18
+})
+
 def main():
     labels = ["x", "x_dot", "theta", "theta_dot"]
 
@@ -43,11 +54,10 @@ def main():
     #         plt.ylabel(ylabel)
     #         plt.title(f"{ylabel} vs {labels[i]}")
     #         plt.grid(True)
-
+    #
     #         fname = f"{ylabel.replace(' ', '_')}_vs_{labels[i]}"
-    #         plt.savefig(os.path.join(pdf_dir, f"{fname}.pdf"))
-    #         plt.savefig(os.path.join(png_dir, f"{fname}.png"))
-    #         plt.show()
+    #         plt.savefig(os.path.join(pdf_dir, f"{fname}.pdf"), bbox_inches='tight')
+    #         plt.savefig(os.path.join(png_dir, f"{fname}.png"), bbox_inches='tight')
     #         plt.close()
 
     # Combined 1D plots 
@@ -65,12 +75,11 @@ def main():
             axs[j].grid(True)
 
         fig.suptitle(f"All Outputs vs {labels[i]}")
-        fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+        plt.subplots_adjust(wspace=0.15, hspace=0.2, top=0.9)
 
         fname = f"combined_outputs_vs_{labels[i]}"
-        fig.savefig(os.path.join(pdf_dir, f"{fname}.pdf"))
-        fig.savefig(os.path.join(png_dir, f"{fname}.png"))
-        plt.show()
+        fig.savefig(os.path.join(pdf_dir, f"{fname}.pdf"), bbox_inches='tight')
+        fig.savefig(os.path.join(png_dir, f"{fname}.png"), bbox_inches='tight')
         plt.close(fig)
 
     # 2D slices (only for delta mode) 
@@ -94,11 +103,11 @@ def main():
             )
 
             for k in range(4):
-                Z = Z_outputs[:, k]
-                plt.figure()
+                plt.figure(figsize=(7, 6))
                 triang = Triangulation(X_coords[:, 0], X_coords[:, 1])
-                contour = plt.tricontourf(triang, Z, levels=20, cmap='viridis')
-                plt.colorbar(contour)
+                contour = plt.tricontourf(triang, Z_outputs[:, k], levels=20, cmap='viridis')
+                cbar = plt.colorbar(contour)
+                cbar.ax.tick_params(labelsize=12)
 
                 label_i = labels[i]
                 label_j = labels[j]
@@ -106,11 +115,11 @@ def main():
                 plt.xlabel(label_i)
                 plt.ylabel(label_j)
                 plt.title(f"{label_k} over ({label_i}, {label_j})")
+                plt.tight_layout()
 
                 fname = f"{label_k.replace(' ', '_')}_vs_{label_i}_{label_j}"
-                plt.savefig(os.path.join(contour_pdf, f"{fname}.pdf"))
-                plt.savefig(os.path.join(contour_png, f"{fname}.png"))
-                plt.show()
+                plt.savefig(os.path.join(contour_pdf, f"{fname}.pdf"), bbox_inches='tight')
+                plt.savefig(os.path.join(contour_png, f"{fname}.png"), bbox_inches='tight')
                 plt.close()
 
 

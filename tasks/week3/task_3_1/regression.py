@@ -80,6 +80,12 @@ def main():
     Y_val_pred_init = predict_kernel(X_val, X_basis, alpha_init, jnp.exp(init_params[:6]))
     mse_init = np.mean((Y_val - np.array(Y_val_pred_init))**2)
     print("\nInitial validation MSE:", mse_init)
+    
+    # Calculate per-variable initial MSE
+    mse_per_var_init = np.mean((Y_val - np.array(Y_val_pred_init))**2, axis=0)
+    print("\nInitial MSE per output variable:")
+    for i, label in enumerate(output_labels):
+        print(f"Δ{label}: {mse_per_var_init[i]:.6f}")
 
     objective = lambda p: float(loss_fn(p, X_train, Y_train, X_val, Y_val, X_basis))
     grad_fn = jax.grad(loss_fn)
@@ -104,6 +110,18 @@ def main():
 
     alpha, _, _ = fit_model_jax(X_train, Y_train, X_basis, opt_log_params)
     Y_val_pred = predict_kernel(X_val, X_basis, alpha, jnp.exp(opt_log_params[:6]))
+
+    # Calculate per-variable final MSE
+    mse_per_var = np.mean((Y_val - np.array(Y_val_pred))**2, axis=0)
+    print("\nFinal MSE per output variable:")
+    for i, label in enumerate(output_labels):
+        print(f"Δ{label}: {mse_per_var[i]:.6f}")
+    
+    # Calculate percentage improvement per variable
+    pct_improvement = 100 * (mse_per_var_init - mse_per_var) / mse_per_var_init
+    print("\nPercentage improvement per variable:")
+    for i, label in enumerate(output_labels):
+        print(f"Δ{label}: {pct_improvement[i]:.2f}%")
 
     plot_predicted_vs_true_deltas(np.array(Y_val), np.array(Y_val_pred), output_labels, out_dir)
     plot_all_deltas_vs_inputs(np.array(X_val), np.array(Y_val), np.array(Y_val_pred), output_labels, out_dir)
