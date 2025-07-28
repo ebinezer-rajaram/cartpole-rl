@@ -4,7 +4,7 @@ import os
 def main():
     np.random.seed(42)
     
-    noise_std = 0.05  
+    noise_std = 0.05
 
     os.makedirs("data/task_4.1", exist_ok=True)
     
