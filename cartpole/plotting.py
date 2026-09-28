@@ -4,7 +4,7 @@ from matplotlib import animation
 import os
 import matplotlib.tri as tri
 
-# Set global plotting parameters for better readability in reports
+# Set global plotting parameters for readability in saved figures
 plt.rcParams.update({
     'font.size': 13,
     'axes.titlesize': 15,

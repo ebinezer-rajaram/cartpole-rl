@@ -2,11 +2,10 @@
 
 Learn the dynamics of an inverted pendulum from simulated transitions, then optimise a feedback controller by differentiating through the learned model, and test how it holds up under noise.
 
-![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
-![JAX](https://img.shields.io/badge/JAX-autodiff-A8B9CC)
-![NumPy](https://img.shields.io/badge/NumPy%20%C2%B7%20SciPy-013243?logo=numpy&logoColor=white)
-![Cambridge](https://img.shields.io/badge/University%20of%20Cambridge-SF3-A3C1AD)
-![License: MIT](https://img.shields.io/badge/License-MIT-green)
+<p align="center">
+  <img src="assets/policy_stabilisation.png" width="100%" alt="Pole angle and cart position over 4 seconds from a 0.1 rad tilt, for a policy optimised on the true dynamics, a policy optimised on the learned model, and no control">
+  <br><em>From a 0.1 rad tilt, a linear policy optimised through the differentiable simulator returns the pole to upright (loss 1.47 / 20) and holds it. A policy optimised only inside the learned kernel model, replayed on the simulator, keeps the pole within 0.06 rad after the first step but oscillates slowly (loss 3.77 / 20). Without control the pole falls.</em>
+</p>
 
 ## Overview
 
@@ -28,7 +27,7 @@ The pipeline builds up from linear least squares, to periodic-kernel regression 
 | $(0.08, -0.13, 0.09, 0.17)$, perturbed | $[1.18,\ 4.71,\ 34.94,\ 5.06]$ | **1.44** |
 | $(0, 0, \pi, 0)$, hanging down | $[0,\ 0,\ 0,\ 0]$ | 20.0 |
 
-The hanging-down case is the informative failure. The loss is saturated, so its gradient vanishes and a linear feedback law cannot learn a swing-up. That is why the controller is posed as local stabilisation about the upright equilibrium. (Values recorded in `tasks/week3/task_3_2/optimise_policy.py`.)
+The hanging-down case is the informative failure. The loss is saturated, so its gradient vanishes and a linear feedback law cannot learn a swing-up. That is why the controller is posed as local stabilisation about the upright equilibrium. (Values recorded in `experiments/policy_search/optimise_policy.py`. Re-running it with current JAX reproduces the tilted and hanging-down rows; for the perturbed start, L-BFGS from zero gains now settles in a worse local minimum (loss 2.86), although the recorded gains above still score 1.445 under the current code.)
 
 ## Method
 
@@ -69,11 +68,11 @@ cartpole/
   simulation.py      # simulator, linear-model and kernel-model rollouts
   scanning.py        # 1-D / 2-D state scans, model vs. truth
   plotting.py        # time series, phase portraits, scan and slice plots
-tasks/
-  week1/             # simulation, state scans, linear regression, model rollouts
-  week2/             # kernel regression, convergence in N and M, JAX hyperparameter optimisation
-  week3/             # action-conditioned model, loss landscapes, policy optimisation
-  week4/             # observation-noise study, noisy dynamics, policy stability
+experiments/
+  linear_model/      # simulation, state scans, linear regression, model rollouts
+  kernel_model/      # kernel regression, convergence in N and M, JAX hyperparameter optimisation
+  policy_search/     # action-conditioned model, loss landscapes, policy optimisation
+  robustness/        # observation-noise study, noisy dynamics, policy stability
 tests/               # pytest suite for simulator, rollouts and scans
 ```
 
@@ -83,25 +82,29 @@ Run everything from the repository root. Each script writes to `data/`, `models/
 
 ```bash
 uv venv && uv pip install -r requirements.txt
-uv run pytest                                          # simulator and scan tests
+uv run python -m pytest                                              # simulator and scan tests
 
-uv run python -m tasks.week1.task_1_3_dataset          # 500 random transitions
-uv run python -m tasks.week1.task_1_3_regression       # linear model
-uv run python -m tasks.week2.task_2_1.convergence      # kernel error vs N and M
-uv run python -m tasks.week2.task_2_3.jax_regression   # sin/cos kernel model, JAX-tuned
+uv run python -m experiments.linear_model.dataset                    # 500 random transitions
+uv run python -m experiments.linear_model.regression                 # linear model
+uv run python -m experiments.kernel_model.convergence                # kernel error vs N and M
+uv run python -m experiments.kernel_model.sincos_jax_regression      # sin/cos kernel model, JAX-tuned
 
-uv run python -m tasks.week3.task_3_1.dataset          # 50,000 state-action transitions
-uv run python -m tasks.week3.task_3_1.regression       # action-conditioned kernel model
-uv run python -m tasks.week3.task_3_2.optimise_policy  # policy search on the true dynamics
-uv run python -m tasks.week3.task_3_3.optimise_action  # policy search on the learned model
+uv run python -m experiments.policy_search.dataset                   # 50,000 state-action transitions
+uv run python -m experiments.policy_search.action_model              # action-conditioned kernel model
+uv run python -m experiments.policy_search.optimise_policy           # policy search on the true dynamics
+uv run python -m experiments.policy_search.optimise_on_action_model  # policy search on the learned model
 
-uv run python -m tasks.week4.task_4_1.noise_impact_study
+uv run python -m experiments.robustness.observation_noise.noise_impact_study
 ```
 
 ## Tech stack
 
 Python · JAX (autodiff, `jit`, `vmap`, `lax.scan`) · NumPy · SciPy (L-BFGS-B) · scikit-learn (k-means) · Matplotlib · pytest
 
-## Context
+## Acknowledgements
 
-Developed for the **SF3 Machine Learning** project (Part IIA), MEng Information & Computer Engineering, University of Cambridge, supervised by José Miguel Hernández-Lobato and Carl E. Rasmussen. The reference simulator in `cartpole/CartPole.py` is derived from the python-rl / PyBrain cart-pole implementation (see its file header).
+Originally developed for SF3 Machine Learning, Department of Engineering, University of Cambridge, supervised by José Miguel Hernández-Lobato and Carl E. Rasmussen. The reference simulator in `cartpole/CartPole.py` is derived from the python-rl / PyBrain cart-pole implementation (see its file header).
+
+## Licence
+
+[MIT](LICENSE)
