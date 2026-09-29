@@ -1,12 +1,24 @@
 import os
 import argparse
 
+OBSERVATION_NOISE_POLICIES = "models/robustness/observation_noise/optimized_policies.npz"
+
 def main():
     parser = argparse.ArgumentParser(description="Process-noise pipeline: noisy dynamics, data, model and policy stability")
     parser.add_argument('--step', type=int, choices=[1, 2, 3, 4], default=0, 
                         help="Run specific step: 1=test dynamics, 2=generate data, 3=train model, 4=evaluate stability")
     args = parser.parse_args()
-    
+
+    # Step 4 stress-tests the policies from the observation-noise study, so that
+    # pipeline must run first; fail before spending time on steps 1-3.
+    if args.step in (0, 4) and not os.path.exists(OBSERVATION_NOISE_POLICIES):
+        parser.error(
+            f"{OBSERVATION_NOISE_POLICIES} not found. Run the observation-noise pipeline first:\n"
+            "  python -m experiments.robustness.observation_noise.noisy_data\n"
+            "  python -m experiments.robustness.observation_noise.kernel_model\n"
+            "  python -m experiments.robustness.observation_noise.optimise_policy"
+        )
+
     # Create output directories
     os.makedirs("figures/robustness/process_noise", exist_ok=True)
     os.makedirs("models/robustness/process_noise", exist_ok=True)

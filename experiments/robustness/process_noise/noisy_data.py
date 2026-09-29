@@ -74,20 +74,23 @@ def main():
     """Generate datasets from dynamics with additive process noise."""
     np.random.seed(42)
     
-    # Create output directory
+    # Create output directories
     os.makedirs("data/robustness/process_noise", exist_ok=True)
-    
+    os.makedirs("models/robustness/process_noise", exist_ok=True)
+
     # Generate dataset with clean dynamics (noise_std=0)
     print("Generating dataset with clean dynamics...")
     X_clean, Y_clean = collect_dataset(n_trajectories=100, steps_per_trajectory=20, noise_std=0.0)
     
     # Generate datasets with different noise levels
     noise_levels = [0.01, 0.05, 0.1]
-    
+    noisy_datasets = {}
+
     for noise_std in noise_levels:
         print(f"Generating dataset with noise_std={noise_std}...")
         X_noisy, Y_noisy = collect_dataset(n_trajectories=100, steps_per_trajectory=20, noise_std=noise_std)
-        
+        noisy_datasets[noise_std] = (X_noisy, Y_noisy)
+
         # Save dataset
         np.savez(
             f"data/robustness/process_noise/nonlinear_dataset_noise_{noise_std:.2f}.npz",
@@ -121,6 +124,7 @@ def main():
     
     # Save the reference noisy dataset used by the downstream models
     main_noise_std = 0.05  # Noise level of the reference dataset
+    X_noisy, Y_noisy = noisy_datasets[main_noise_std]
     np.savez("models/robustness/process_noise/nonlinear_dataset.npz", X=X_noisy, Y=Y_noisy, noise_std=main_noise_std)
     print(f"Reference process-noise dataset saved with noise_std={main_noise_std}")
     

@@ -266,9 +266,9 @@ def main():
     T = 30
     max_force = 20.0
 
-    model_path = "models/policy_search/nonlinear_model.npz"
+    model_path = "models/robustness/process_noise/nonlinear_model.npz"
     if not os.path.exists(model_path):
-        print(f"Error: Model not found at {model_path}. Please run nonlinear.py first to generate the model.")
+        print(f"Error: Model not found at {model_path}. Run experiments.robustness.process_noise.kernel_model first.")
         return
 
     model = np.load(model_path)

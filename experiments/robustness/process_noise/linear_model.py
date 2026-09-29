@@ -22,7 +22,8 @@ def main():
     labels = ["x", "x_dot", "theta", "theta_dot"]
     out_dir = _make_output_dirs("figures/robustness/process_noise/linear")
     
-    data = np.load("models/robustness/process_noise/linear_dataset.npz")
+    # Reference process-noise dataset written by noisy_data.py
+    data = np.load("models/robustness/process_noise/nonlinear_dataset.npz")
     X = data["X"]
     Y = data["Y"]
     
@@ -55,7 +56,7 @@ def main():
     ax.set_ylabel("Output dimension")
     ax.set_xticks(np.arange(C.shape[1]))
     ax.set_yticks(np.arange(C.shape[0]))
-    ax.set_xticklabels(labels)
+    ax.set_xticklabels(labels + ["action"])  # inputs are state + action
     ax.set_yticklabels([f"Δ{label}" for label in labels])
     plt.colorbar(im, ax=ax)
     plt.tight_layout()

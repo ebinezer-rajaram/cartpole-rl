@@ -4,7 +4,7 @@ Learn the dynamics of an inverted pendulum from simulated transitions, then opti
 
 <p align="center">
   <img src="assets/policy_stabilisation.png" width="100%" alt="Pole angle and cart position over 4 seconds from a 0.1 rad tilt, for a policy optimised on the true dynamics, a policy optimised on the learned model, and no control">
-  <br><em>From a 0.1 rad tilt, a linear policy optimised through the differentiable simulator returns the pole to upright (loss 1.47 / 20) and holds it. A policy optimised only inside the learned kernel model, replayed on the simulator, keeps the pole within 0.06 rad after the first step but oscillates slowly (loss 3.77 / 20). Without control the pole falls.</em>
+  <br><em>From a 0.1 rad tilt, a linear policy optimised through the differentiable simulator returns the pole to upright (loss 1.47 / 20) and holds it. A policy optimised only inside the learned kernel model, replayed on the simulator, keeps the pole within 0.05 rad after the first step and settles close to upright, with a slower cart drift (loss 2.48 / 20). Without control the pole falls.</em>
 </p>
 
 ## Overview
@@ -15,7 +15,7 @@ The pipeline builds up from linear least squares, to periodic-kernel regression 
 
 ## Highlights
 
-- **Stabilisation from a tilted start.** On the simulator, a linear policy optimised by L-BFGS through a differentiable 20-step rollout brings the pole from $\theta_0 = 0.1$ rad to upright with a cumulative loss of **1.47 out of a maximum 20**, and **1.44 / 20** from a perturbed start of all four states.
+- **Stabilisation from a tilted start.** On the simulator, a linear policy optimised by L-BFGS through a differentiable 20-step rollout brings the pole from $\theta_0 = 0.1$ rad to upright with a cumulative loss of **1.47 out of a maximum 20**, and 2.86 / 20 from a perturbed start of all four states.
 - **The simulator itself is differentiable.** The 50-substep semi-implicit Euler integrator is re-implemented in JAX (`jax.lax.scan`), so exact policy gradients come from autodiff instead of finite differences.
 - **Angles handled correctly.** The kernel treats $\theta$ as periodic, either through a $\sin\!\big((\theta-\theta')/2\big)$ distance or through $(\sin\theta, \cos\theta)$ features, so the model does not break at the $\pm\pi$ wrap-around.
 - **Hyperparameters by gradient descent.** Per-dimension lengthscales and the ridge penalty $\lambda$ are learned by differentiating validation MSE through the closed-form kernel solve.
@@ -23,11 +23,11 @@ The pipeline builds up from linear least squares, to periodic-kernel regression 
 
 | Initial state $(x, \dot x, \theta, \dot\theta)$ | Optimised gains $p$ | Loss (T = 20, max 20) |
 |---|---|---|
-| $(0, 0, 0.1, 0)$, tilted | $[0.46,\ 3.97,\ 34.07,\ 4.79]$ | **1.47** |
-| $(0.08, -0.13, 0.09, 0.17)$, perturbed | $[1.18,\ 4.71,\ 34.94,\ 5.06]$ | **1.44** |
+| $(0, 0, 0.1, 0)$, tilted | $[0.47,\ 4.02,\ 34.32,\ 4.83]$ | **1.47** |
+| $(0.08, -0.13, 0.09, 0.17)$, perturbed | $[5.06,\ -10.50,\ 13.30,\ -0.73]$ | 2.86 |
 | $(0, 0, \pi, 0)$, hanging down | $[0,\ 0,\ 0,\ 0]$ | 20.0 |
 
-The hanging-down case is the informative failure. The loss is saturated, so its gradient vanishes and a linear feedback law cannot learn a swing-up. That is why the controller is posed as local stabilisation about the upright equilibrium. (Values recorded in `experiments/policy_search/optimise_policy.py`. Re-running it with current JAX reproduces the tilted and hanging-down rows; for the perturbed start, L-BFGS from zero gains now settles in a worse local minimum (loss 2.86), although the recorded gains above still score 1.445 under the current code.)
+The hanging-down case is the informative failure. The loss is saturated, so its gradient vanishes and a linear feedback law cannot learn a swing-up. That is why the controller is posed as local stabilisation about the upright equilibrium. (Values from running `experiments/policy_search/optimise_policy.py`; L-BFGS starts from zero gains in every case.)
 
 ## Method
 
@@ -93,8 +93,16 @@ uv run python -m experiments.policy_search.dataset                   # 50,000 st
 uv run python -m experiments.policy_search.action_model              # action-conditioned kernel model
 uv run python -m experiments.policy_search.optimise_policy           # policy search on the true dynamics
 uv run python -m experiments.policy_search.optimise_on_action_model  # policy search on the learned model
+uv run python -m experiments.policy_search.make_hero_figure          # assets/policy_stabilisation.png
 
 uv run python -m experiments.robustness.observation_noise.noise_impact_study
+uv run python -m experiments.robustness.observation_noise.noisy_data       # noisy-target copies of both datasets
+uv run python -m experiments.robustness.observation_noise.kernel_model     # kernel model refitted to noisy targets
+uv run python -m experiments.robustness.observation_noise.optimise_policy  # policies stress-tested below
+
+uv run python -m experiments.robustness.process_noise.run_all              # noisy dynamics, data, model, policy stability
+uv run python -m experiments.robustness.process_noise.linear_model         # linear model on process-noise data
+uv run python -m experiments.robustness.process_noise.optimise_policy      # policy search on the process-noise model
 ```
 
 ## Tech stack

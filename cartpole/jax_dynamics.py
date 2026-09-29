@@ -12,7 +12,7 @@ def cartpole_dynamics(state, action, params=None):
             gravity=9.8,
             sim_steps=50,
             delta_time=0.1,
-            max_force=10.0,
+            max_force=20.0,
         )
     x, x_dot, theta, theta_dot = state
 
